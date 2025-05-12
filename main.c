@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/10 20:42:14 by marvin            #+#    #+#             */
-/*   Updated: 2025/05/12 18:41:51 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/12 19:29:12 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,14 +23,14 @@ int	is_digit(char *argv)
 	return (0);
 }
 
-void	is_args_digit(int argc, char **argv)
+int	is_args_digit(int argc, char **argv)
 {
 	while (argc > 1)
 	{
 		if (is_digit(argv[argc - 1]))
 		{
 			printf("Invalid arguments\n");
-			exit(1);
+			return(1);
 		}
 		argc--;
 	}
@@ -120,13 +120,15 @@ int	main(int argc, char **argv)
 	loop_t	loop;
 	if (argc == 5 || argc == 6)
 	{
-		is_args_digit(argc, argv);
+		if (is_args_digit(argc, argv) == 1)
+			return(1);
 		init_loop(&loop, argc, argv);
+		return (0);
 	}
 	else
 	{
 		printf("Invalid numbers of arguments\n");
-		exit(1);
+		return(1);
 	}
 	
 }
