@@ -2,7 +2,7 @@ NAME = philosophers
 
 CC = cc
 CFLAGS = #-Wall -Wextra -Werror
-SRC = main.c
+SRC = main.c arg_checks.c
       
 OBJ = $(SRC:.c=.o)
 

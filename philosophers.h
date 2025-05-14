@@ -1,33 +1,47 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   philosophers.h                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/14 15:49:20 by yalp              #+#    #+#             */
+/*   Updated: 2025/05/14 15:52:46 by yalp             ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef PHILOSOPHERS_H
 
-#define PHILOSOPHERS_H
-#include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+# define PHILOSOPHERS_H
+# include <pthread.h>
+# include <stdio.h>
+# include <stdlib.h>
+# include <unistd.h>
 
 typedef struct philosopher_s
 {
-	int		id;
+	int					id;
 	pthread_mutex_t		*left_fork;
 	pthread_mutex_t		*right_fork;
 	int					last_meal_time;
 	int					number_of_times_eaten;
 	pthread_t			thread;
-	struct	loop_s		*loop_con;
-} philosopher_t;
+	struct loop_s		*loop_con;
+}	t_philosopher;
 
 typedef struct loop_s
 {
-	philosopher_t	*philosophers;
-	int				number_of_philosophers;
+	t_philosopher	*philos;
+	int				number_of_philos;
 	int				start_time;
 	int				time_to_die;
 	int				time_to_eat;
 	int				time_to_sleep;
 	pthread_mutex_t	*forks;
 	int				number_of_times_each_philosopher_must_eat;
-} loop_t;
+}	t_loop;
 
+int	ft_atoi(const char *str);
+int	arg_check(int argc, char **argv);
 
 #endif
