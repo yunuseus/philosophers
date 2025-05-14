@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/10 20:42:14 by marvin            #+#    #+#             */
-/*   Updated: 2025/05/14 18:23:45 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/14 18:29:33 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,12 @@ void	*start_loop(void	*philosopher)
 	philo = (t_philosopher *)philosopher;
 	while (1)
 	{
-		
+		if (get_time() - philo->last_meal_time - philo->loop_con->start_time > philo->loop_con->time_to_die)
+		{
+			printf("%llu Philosopher %d died\n", get_time() - philo->loop_con->start_time, philo->id);
+			philo->loop_con->is_someone_dead = 1;
+			return (NULL);
+		}
 		if (philo->id % 2 == 0)
 			even_id_philo(philo);
 		else
