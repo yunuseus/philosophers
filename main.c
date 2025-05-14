@@ -93,6 +93,19 @@ void	init_philosophers(t_loop *loop)
 	pthread_create(&loop->control_thread, NULL, loop_ctrl, loop);
 }
 
+void	init_mutexes(t_loop *loop)
+{
+	int	i;
+
+	i = 0;
+	loop->forks = malloc(sizeof(pthread_mutex_t) * loop->number_of_philos);
+	while (i < loop->number_of_philos)
+		pthread_mutex_init(&loop->forks[i++], NULL);
+	pthread_mutex_init(&loop->death_mutex, NULL);
+	pthread_mutex_init(&loop->print_mutex, NULL);
+	pthread_mutex_init(&loop->eat_mutex, NULL);
+}
+
 void	init_loop(t_loop *loop, int argc, char **argv)
 {
 	int	i;
@@ -108,12 +121,7 @@ void	init_loop(t_loop *loop, int argc, char **argv)
 		loop->number_of_times_each_philosopher_must_eat = ft_atoi(argv[5]);
 	else
 		loop->number_of_times_each_philosopher_must_eat = -1;
-	loop->forks = malloc(sizeof(pthread_mutex_t) * loop->number_of_philos);
-	while (i < loop->number_of_philos)
-		pthread_mutex_init(&loop->forks[i++], NULL);
-	pthread_mutex_init(&loop->death_mutex, NULL);
-	pthread_mutex_init(&loop->print_mutex, NULL);
-	pthread_mutex_init(&loop->eat_mutex, NULL);
+	init_mutexes(loop);
 	init_philosophers(loop);
 }
 
