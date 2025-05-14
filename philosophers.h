@@ -3,6 +3,8 @@
 #define PHILOSOPHERS_H
 #include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 typedef struct philosopher_s
 {
@@ -12,7 +14,7 @@ typedef struct philosopher_s
 	int					last_meal_time;
 	int					number_of_times_eaten;
 	pthread_t			thread;
-	loop_t				*loop_con;
+	struct	loop_s		*loop_con;
 } philosopher_t;
 
 typedef struct loop_s

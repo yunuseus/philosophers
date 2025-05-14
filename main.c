@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/10 20:42:14 by marvin            #+#    #+#             */
-/*   Updated: 2025/05/12 19:29:12 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/14 15:31:45 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,8 +34,9 @@ int	is_args_digit(int argc, char **argv)
 		}
 		argc--;
 	}
+	return (0);
 }
-void	start_loop(void	*philosopher)
+void	*start_loop(void	*philosopher)
 {
 	philosopher_t philo;
 	
@@ -55,7 +56,7 @@ void	start_loop(void	*philosopher)
 		printf("Philosopher %d is eating\n", philo.id);
 		usleep(philo.loop_con->time_to_eat * 1000);
 	}
-	
+	return (NULL);
 }
 void	init_philosophers(loop_t *loop)
 {
@@ -74,7 +75,7 @@ void	init_philosophers(loop_t *loop)
 		loop->philosophers[i].right_fork = &loop->forks[0];
 		else
 		loop->philosophers[i].right_fork = &loop->forks[i + 1];
-		pthread_create(loop->philosophers->thread, NULL, start_loop, &loop->philosophers[i]);
+		pthread_create(&loop->philosophers->thread, NULL, start_loop, &loop->philosophers[i]);
 		i++;
 	}
 }
@@ -103,17 +104,7 @@ void	init_loop(loop_t *loop, int argc, char **argv)
 	init_philosophers(loop);
 	
 }
-void	start_loop(loop_t *loop)
-{
-	if (loop->number_of_times_each_philosopher_must_eat == -1)
-	{
-		
-	}
-	else
-	{
-		
-	}
-}
+
 
 int	main(int argc, char **argv)
 {
@@ -130,5 +121,5 @@ int	main(int argc, char **argv)
 		printf("Invalid numbers of arguments\n");
 		return(1);
 	}
-	
+	return (0);
 }
