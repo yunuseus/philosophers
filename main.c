@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/10 20:42:14 by marvin            #+#    #+#             */
-/*   Updated: 2025/05/14 18:14:33 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/14 18:23:45 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ void	*start_loop(void	*philosopher)
 	philo = (t_philosopher *)philosopher;
 	while (1)
 	{
+		
 		if (philo->id % 2 == 0)
 			even_id_philo(philo);
 		else
@@ -27,9 +28,9 @@ void	*start_loop(void	*philosopher)
 		usleep(philo->loop_con->time_to_eat * 1000);
 		pthread_mutex_unlock(philo->left_fork);
 		pthread_mutex_unlock(philo->right_fork);
-		printf("%ld Philosopher %d is sleeping\n",get_time() - philo->loop_con->start_time, philo->id);
+		printf("%llu Philosopher %d is sleeping\n",get_time() - philo->loop_con->start_time, philo->id);
 		usleep(philo->loop_con->time_to_sleep * 1000);
-		printf("%ld Philosopher %d is thinking\n",get_time() - philo->loop_con->start_time, philo->id);
+		printf("%llu Philosopher %d is thinking\n",get_time() - philo->loop_con->start_time, philo->id);
 	}
 	return (NULL);
 }
