@@ -6,31 +6,30 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/10 20:42:14 by marvin            #+#    #+#             */
-/*   Updated: 2025/05/14 15:53:47 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/14 18:14:33 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
+
 void	*start_loop(void	*philosopher)
 {
-	t_philosopher	philo;
+	t_philosopher	*philo;
 
-	philo = *(t_philosopher *)philosopher;
+	philo = (t_philosopher *)philosopher;
 	while (1)
 	{
-		if (philo.id % 2 == 0)
-		{
-			pthread_mutex_lock(philo.left_fork);
-			pthread_mutex_lock(philo.right_fork);
-		}
+		if (philo->id % 2 == 0)
+			even_id_philo(philo);
 		else
-		{
-			pthread_mutex_lock(philo.right_fork);
-			pthread_mutex_lock(philo.left_fork);
-		}
-		printf("Philosopher %d is eating\n", philo.id);
-		usleep(philo.loop_con->time_to_eat * 1000);
+			odd_id_philo(philo);
+		usleep(philo->loop_con->time_to_eat * 1000);
+		pthread_mutex_unlock(philo->left_fork);
+		pthread_mutex_unlock(philo->right_fork);
+		printf("%ld Philosopher %d is sleeping\n",get_time() - philo->loop_con->start_time, philo->id);
+		usleep(philo->loop_con->time_to_sleep * 1000);
+		printf("%ld Philosopher %d is thinking\n",get_time() - philo->loop_con->start_time, philo->id);
 	}
 	return (NULL);
 }
@@ -52,7 +51,7 @@ void	init_philosophers(t_loop *loop)
 			loop->philos[i].right_fork = &loop->forks[0];
 		else
 			loop->philos[i].right_fork = &loop->forks[i + 1];
-		pthread_create(&loop->philos->thread, NULL,
+		pthread_create(&loop->philos[i].thread, NULL,
 			start_loop, &loop->philos[i]);
 		i++;
 	}
@@ -67,6 +66,8 @@ void	init_loop(t_loop *loop, int argc, char **argv)
 	loop->time_to_die = ft_atoi(argv[2]);
 	loop->time_to_eat = ft_atoi(argv[3]);
 	loop->time_to_sleep = ft_atoi(argv[4]);
+	loop->start_time = get_time();
+	loop->is_someone_dead = 0;
 	if (argc == 6)
 		loop->number_of_times_each_philosopher_must_eat = ft_atoi(argv[5]);
 	else
@@ -80,12 +81,41 @@ void	init_loop(t_loop *loop, int argc, char **argv)
 	init_philosophers(loop);
 }
 
+void	end(t_loop *loop)
+{
+	int	i;
+
+	i = 0;
+	while (i < loop->number_of_philos)
+	{
+		pthread_mutex_destroy(&loop->forks[i]);
+		i++;
+	}
+	free(loop->forks);
+	free(loop->philos);
+}
+
 int	main(int argc, char **argv)
 {
 	t_loop	loop;
+	int		i;
 
 	if (arg_check(argc, argv) == 1)
 		return (1);
 	init_loop(&loop, argc, argv);
+	i = 0;
+	while (i < loop.number_of_philos)
+	{
+		pthread_join(loop.philos[i].thread, NULL);
+		i++;
+	}
+	while (1)
+	{
+		if (loop.is_someone_dead == 1 || is_all_philos_full(&loop) == 1)
+		{
+			end(&loop);
+			break;
+		}
+	}
 	return (0);
 }
