@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 15:49:20 by yalp              #+#    #+#             */
-/*   Updated: 2025/05/14 18:22:30 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/14 19:15:23 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ typedef struct philosopher_s
 typedef struct loop_s
 {
 	t_philosopher		*philos;
+	
 	int					number_of_philos;
 	unsigned long long	start_time;
 	int					time_to_die;

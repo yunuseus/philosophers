@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/10 20:42:14 by marvin            #+#    #+#             */
-/*   Updated: 2025/05/14 18:29:33 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/14 19:15:11 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,12 +20,9 @@ void	*start_loop(void	*philosopher)
 	philo = (t_philosopher *)philosopher;
 	while (1)
 	{
-		if (get_time() - philo->last_meal_time - philo->loop_con->start_time > philo->loop_con->time_to_die)
-		{
-			printf("%llu Philosopher %d died\n", get_time() - philo->loop_con->start_time, philo->id);
-			philo->loop_con->is_someone_dead = 1;
+		pthread_mutex_lock
+		if (philo->loop_con->is_someone_dead == 1)
 			return (NULL);
-		}
 		if (philo->id % 2 == 0)
 			even_id_philo(philo);
 		else
@@ -40,27 +37,53 @@ void	*start_loop(void	*philosopher)
 	return (NULL);
 }
 
-void	init_philosophers(t_loop *loop)
+void	*loop_ctrl(void *tmp)
 {
 	int	i;
+	t_loop	*loop;
 
-	i = 0;
-	loop->philos = malloc(sizeof(t_philosopher) * loop->number_of_philos);
-	while (i < loop->number_of_philos)
+	loop = (t_loop *)tmp;
+
+	while (1)
 	{
-		loop->philos[i].loop_con = loop;
-		loop->philos[i].id = i + 1;
-		loop->philos[i].left_fork = &loop->forks[i];
-		loop->philos[i].number_of_times_eaten = 0;
-		loop->philos[i].last_meal_time = 0;
-		if (i == loop->number_of_philos - 1)
-			loop->philos[i].right_fork = &loop->forks[0];
-		else
-			loop->philos[i].right_fork = &loop->forks[i + 1];
-		pthread_create(&loop->philos[i].thread, NULL,
-			start_loop, &loop->philos[i]);
-		i++;
+		i = 0;
+		while (i < loop->number_of_philos)
+		{
+			if (get_time() - loop->philos[i].last_meal_time > loop->time_to_die)
+			{
+				printf("%llu Philosopher %d is dead\n", get_time() - loop->start_time, loop->philos[i].id);
+				loop->is_someone_dead = 1;
+				return (NULL);
+			}
+			i++;
+		}
+		usleep(100);
 	}
+	return (NULL);
+}
+
+void	init_philosophers(t_loop *loop)
+{
+    int	i;
+
+    i = 0;
+    loop->philos = malloc(sizeof(t_philosopher) * loop->number_of_philos);
+    while (i < loop->number_of_philos)
+    {
+        loop->philos[i].loop_con = loop;
+        loop->philos[i].id = i + 1;
+        loop->philos[i].left_fork = &loop->forks[i];
+        loop->philos[i].number_of_times_eaten = 0;
+        loop->philos[i].last_meal_time = loop->start_time;
+        if (i == loop->number_of_philos - 1)
+            loop->philos[i].right_fork = &loop->forks[0];
+        else
+            loop->philos[i].right_fork = &loop->forks[i + 1];
+        pthread_create(&loop->philos[i].thread, NULL,
+            start_loop, &loop->philos[i]);
+        i++;
+    }
+	pthread_create(&loop->control_thread, NULL, loop_ctrl, loop);
 }
 
 void	init_loop(t_loop *loop, int argc, char **argv)
@@ -80,10 +103,7 @@ void	init_loop(t_loop *loop, int argc, char **argv)
 		loop->number_of_times_each_philosopher_must_eat = -1;
 	loop->forks = malloc(sizeof(pthread_mutex_t) * loop->number_of_philos);
 	while (i < loop->number_of_philos)
-	{
-		pthread_mutex_init(&loop->forks[i], NULL);
-		i++;
-	}
+		pthread_mutex_init(&loop->forks[i++], NULL);
 	init_philosophers(loop);
 }
 
@@ -110,18 +130,11 @@ int	main(int argc, char **argv)
 		return (1);
 	init_loop(&loop, argc, argv);
 	i = 0;
+	pthread_join(loop.control_thread, NULL);
 	while (i < loop.number_of_philos)
 	{
 		pthread_join(loop.philos[i].thread, NULL);
 		i++;
-	}
-	while (1)
-	{
-		if (loop.is_someone_dead == 1 || is_all_philos_full(&loop) == 1)
-		{
-			end(&loop);
-			break;
-		}
 	}
 	return (0);
 }
