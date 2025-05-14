@@ -44,6 +44,9 @@ typedef struct loop_s
 	int 				is_someone_dead;
 	pthread_t			control_thread;
 	int					is_ctrl_joined;
+	pthread_mutex_t		print_mutex;
+	pthread_mutex_t		death_mutex;
+	pthread_mutex_t		eat_mutex;
 }	t_loop;
 
 int					ft_atoi(const char *str);

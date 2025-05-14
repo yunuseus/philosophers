@@ -20,9 +20,13 @@ void	*start_loop(void	*philosopher)
 	philo = (t_philosopher *)philosopher;
 	while (1)
 	{
-		pthread_mutex_lock
+		pthread_mutex_lock(&philo->loop_con->death_mutex);
 		if (philo->loop_con->is_someone_dead == 1)
+		{
+			pthread_mutex_unlock(&philo->loop_con->death_mutex);
 			return (NULL);
+		}
+		pthread_mutex_unlock(&philo->loop_con->death_mutex);
 		if (philo->id % 2 == 0)
 			even_id_philo(philo);
 		else
@@ -52,11 +56,14 @@ void	*loop_ctrl(void *tmp)
 			if (get_time() - loop->philos[i].last_meal_time > loop->time_to_die)
 			{
 				printf("%llu Philosopher %d is dead\n", get_time() - loop->start_time, loop->philos[i].id);
+				pthread_mutex_lock(&loop->death_mutex);
 				loop->is_someone_dead = 1;
+				pthread_mutex_unlock(&loop->death_mutex);
 				return (NULL);
 			}
 			i++;
 		}
+		
 		usleep(100);
 	}
 	return (NULL);
@@ -104,6 +111,9 @@ void	init_loop(t_loop *loop, int argc, char **argv)
 	loop->forks = malloc(sizeof(pthread_mutex_t) * loop->number_of_philos);
 	while (i < loop->number_of_philos)
 		pthread_mutex_init(&loop->forks[i++], NULL);
+	pthread_mutex_init(&loop->death_mutex, NULL);
+	pthread_mutex_init(&loop->print_mutex, NULL);
+	pthread_mutex_init(&loop->eat_mutex, NULL);
 	init_philosophers(loop);
 }
 
