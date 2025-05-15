@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 15:49:20 by yalp              #+#    #+#             */
-/*   Updated: 2025/05/14 19:15:23 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/15 17:11:33 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,10 +24,11 @@ typedef struct philosopher_s
 	int					id;
 	pthread_mutex_t		*left_fork;
 	pthread_mutex_t		*right_fork;
-	int					last_meal_time;
+	unsigned long long	last_meal_time;
 	int					number_of_times_eaten;
 	pthread_t			thread;
 	struct loop_s		*loop_con;
+	int					is_eating;
 }	t_philosopher;
 
 typedef struct loop_s
