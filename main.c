@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/10 20:42:14 by marvin            #+#    #+#             */
-/*   Updated: 2025/05/15 17:31:46 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/15 18:02:05 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,11 +24,6 @@ void	*start_loop(void	*philosopher)
 			even_id_philo(philo);
 		else
 			odd_id_philo(philo);
-		pthread_mutex_unlock(philo->right_fork);
-		pthread_mutex_unlock(philo->left_fork);
-		printf("%llu %d is sleeping\n",get_time() - philo->loop_con->start_time, philo->id);
-		usleep(philo->loop_con->time_to_sleep * 1000);
-		printf("%llu %d is thinking\n",get_time() - philo->loop_con->start_time, philo->id);
 	}
 	return (NULL);
 }
@@ -61,15 +56,10 @@ void	*loop_ctrl(void *tmp)
 	return (NULL);
 }
 
-void	init_philosophers(t_loop *loop)
+void init_values(t_loop *loop, int i)
 {
-    int	i;
 
-    i = 0;
-    loop->philos = malloc(sizeof(t_philosopher) * (loop->number_of_philos + 1));
-    while (i < loop->number_of_philos)
-    {
-        loop->philos[i].loop_con = loop;
+	loop->philos[i].loop_con = loop;
         loop->philos[i].id = i + 1;
         loop->philos[i].left_fork = &loop->forks[i];
         loop->philos[i].number_of_times_eaten = 0;
@@ -78,12 +68,23 @@ void	init_philosophers(t_loop *loop)
             loop->philos[i].right_fork = &loop->forks[0];
         else
             loop->philos[i].right_fork = &loop->forks[i + 1];
+}
+
+void	init_philosophers(t_loop *loop)
+{
+    int	i;
+
+    i = 0;
+    loop->philos = malloc(sizeof(t_philosopher) * (loop->number_of_philos + 1));
+    while (i < loop->number_of_philos)
+    {
+        init_values(loop, i);
         if (pthread_create(&loop->philos[i].thread, NULL, start_loop, &loop->philos[i]) != 0)
             printf("Thread %d başlatılamadı!\n", loop->philos[i].id);
         i++;
     }
 	usleep(100);
-	pthread_create(&loop->control_thread, NULL, loop_ctrl, loop);
+	//pthread_create(&loop->control_thread, NULL, loop_ctrl, loop);
 }
 
 void	init_mutexes(t_loop *loop)

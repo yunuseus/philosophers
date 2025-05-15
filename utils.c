@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 17:19:11 by yalp              #+#    #+#             */
-/*   Updated: 2025/05/15 16:53:27 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/15 18:01:23 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,33 +36,37 @@ int	is_all_philos_full(t_loop *loop)
 
 void  even_id_philo(t_philosopher *philo)
 {
+	printf("%llu %d is thinking\n",get_time() - philo->loop_con->start_time, philo->id);
 	pthread_mutex_lock(philo->left_fork);
 	printf("%llu %d has taken a fork\n",get_time() - philo->loop_con->start_time, philo->id);
 	pthread_mutex_lock(philo->right_fork);
 	printf("%llu %d has taken a fork\n",get_time() - philo->loop_con->start_time, philo->id);
-	pthread_mutex_lock(&philo->loop_con->death_mutex);
 	printf("%llu %d is eating\n",get_time() - philo->loop_con->start_time, philo->id);
 	philo->last_meal_time = get_time();
 	usleep(philo->loop_con->time_to_eat * 1000);
-	pthread_mutex_unlock(&philo->loop_con->death_mutex);
-	pthread_mutex_lock(&philo->loop_con->eat_mutex);
+	pthread_mutex_unlock(philo->right_fork);
+	pthread_mutex_unlock(philo->left_fork);
 	philo->number_of_times_eaten++;
-	pthread_mutex_unlock(&philo->loop_con->eat_mutex);
+	printf("%llu %d is sleeping\n",get_time() - philo->loop_con->start_time, philo->id);
+	usleep(philo->loop_con->time_to_sleep * 1000);
+	printf("%llu %d is thinking\n",get_time() - philo->loop_con->start_time, philo->id);
 }
 
 
 void  odd_id_philo(t_philosopher *philo)
 {
+	printf("%llu %d is thinking\n",get_time() - philo->loop_con->start_time, philo->id);
 	pthread_mutex_lock(philo->right_fork);
 	printf("%llu %d has taken a fork\n",get_time() - philo->loop_con->start_time, philo->id);
 	pthread_mutex_lock(philo->left_fork);
 	printf("%llu %d has taken a fork\n",get_time() - philo->loop_con->start_time, philo->id);
-	pthread_mutex_lock(&philo->loop_con->death_mutex);
 	printf("%llu %d is eating\n",get_time() - philo->loop_con->start_time, philo->id);
 	philo->last_meal_time = get_time();
 	usleep(philo->loop_con->time_to_eat * 1000);
-	pthread_mutex_unlock(&philo->loop_con->death_mutex);
-	pthread_mutex_lock(&philo->loop_con->eat_mutex);
+	pthread_mutex_unlock(philo->right_fork);
+	pthread_mutex_unlock(philo->left_fork);
 	philo->number_of_times_eaten++;
-	pthread_mutex_unlock(&philo->loop_con->eat_mutex);
+	printf("%llu %d is sleeping\n",get_time() - philo->loop_con->start_time, philo->id);
+	usleep(philo->loop_con->time_to_sleep * 1000);
+	printf("%llu %d is thinking\n",get_time() - philo->loop_con->start_time, philo->id);
 }
