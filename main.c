@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/10 20:42:14 by marvin            #+#    #+#             */
-/*   Updated: 2025/05/15 18:02:05 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/15 18:10:39 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,19 +58,18 @@ void	*loop_ctrl(void *tmp)
 
 void init_values(t_loop *loop, int i)
 {
-
 	loop->philos[i].loop_con = loop;
-        loop->philos[i].id = i + 1;
-        loop->philos[i].left_fork = &loop->forks[i];
-        loop->philos[i].number_of_times_eaten = 0;
-        loop->philos[i].last_meal_time = loop->start_time;
-        if (i == loop->number_of_philos - 1)
-            loop->philos[i].right_fork = &loop->forks[0];
-        else
-            loop->philos[i].right_fork = &loop->forks[i + 1];
+	loop->philos[i].id = i + 1;
+	loop->philos[i].left_fork = &loop->forks[i];
+	loop->philos[i].number_of_times_eaten = 0;
+	loop->philos[i].last_meal_time = loop->start_time;
+	if (i == loop->number_of_philos - 1)
+		loop->philos[i].right_fork = &loop->forks[0];
+	else
+		loop->philos[i].right_fork = &loop->forks[i + 1];
 }
 
-void	init_philosophers(t_loop *loop)
+void	create_philosophers(t_loop *loop)
 {
     int	i;
 
@@ -87,7 +86,7 @@ void	init_philosophers(t_loop *loop)
 	//pthread_create(&loop->control_thread, NULL, loop_ctrl, loop);
 }
 
-void	init_mutexes(t_loop *loop)
+void	create_mutexes(t_loop *loop)
 {
 	int	i;
 
@@ -115,8 +114,8 @@ void	init_loop(t_loop *loop, int argc, char **argv)
 		loop->number_of_times_each_philosopher_must_eat = ft_atoi(argv[5]);
 	else
 		loop->number_of_times_each_philosopher_must_eat = -1;
-	init_mutexes(loop);
-	init_philosophers(loop);
+	create_mutexes(loop);
+	create_philosophers(loop);
 }
 
 void	end(t_loop *loop)
