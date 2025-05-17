@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/10 20:42:14 by marvin            #+#    #+#             */
-/*   Updated: 2025/05/17 18:00:42 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/17 18:06:09 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,8 +66,7 @@ void	*is_must_stop(void *arg)
 		pthread_mutex_unlock(&loop->eat_mutex);
 
 	}
-
-	return NULL;
+	return (NULL);
 }
 
 int check_stop(t_loop *loop)
@@ -107,32 +106,6 @@ void	*start_loop(void	*philosopher)
 	return (NULL);
 }
 
-void	*loop_ctrl(void *tmp)
-{
-	int	i;
-	t_loop	*loop;
-
-	loop = (t_loop *)tmp;
-
-	while (1)
-	{
-		i = 0;
-		while (i < loop->number_of_philos)
-		{
-			pthread_mutex_lock(&loop->death_mutex);
-			if (get_time() - loop->philos[i].last_meal_time > loop->time_to_die)
-			{
-				printing(&loop->philos[i], "died");
-				loop->is_someone_dead = 1;
-				pthread_mutex_unlock(&loop->death_mutex);
-				
-			}
-			else
-				pthread_mutex_unlock(&loop->death_mutex);
-			i++;
-		}
-	}
-}
 
 void init_values(t_loop *loop, int i)
 {
@@ -162,7 +135,7 @@ int	create_threads(t_loop *loop)
 		}
 		i++;
     }
-	usleep(100);
+	usleep(300);
 	if (loop->number_of_philos != 1)
 	{
 		if (pthread_create(&loop->control_thread, NULL, is_must_stop, loop) != 0)
@@ -262,6 +235,7 @@ int	main(int argc, char **argv)
 	if (init_loop(&loop, argc, argv))
 		return (1);
 	i = 0;
+	pthread_join(loop.control_thread, NULL);
 	while (i < loop.number_of_philos)
 	{
 		pthread_join(loop.philos[i].thread, NULL);
