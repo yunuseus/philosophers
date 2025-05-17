@@ -6,24 +6,91 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/10 20:42:14 by marvin            #+#    #+#             */
-/*   Updated: 2025/05/15 18:10:39 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/17 16:07:41 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
+void kill(t_philosopher *piholosoper)
+{
+	
+}
+
+void printing(t_philosopher *philo, char *str)
+{
+	pthread_mutex_lock(&philo->loop_con->print_mutex);
+	if (philo->loop_con->is_someone_dead == 0)
+		printf("%llu %d %s\n", get_time() - philo->loop_con->start_time, philo->id, str);
+	pthread_mutex_unlock(&philo->loop_con->print_mutex);
+}
+
+int check_meals(t_loop *loop)
+{
+	int i;
+	int c;
+
+	i = 0;
+	c = 0;
+	pthread_mutex_lock(&loop->eat_mutex);
+	while (i < loop->number_of_philos)
+	{
+		if (loop->philos[i++].number_of_times_eaten >= loop->number_of_times_each_philosopher_must_eat)
+			c++;
+	}
+	pthread_mutex_unlock(&loop->eat_mutex);
+	return (c == loop->number_of_philos);
+}
+
+int	is_must_stop(t_loop *loop)
+{
+	int	i;
+
+	i = 0;
+	pthread_mutex_lock(&loop->death_mutex);
+	while (i < loop->number_of_philos)
+	{
+		if (get_time() - loop->philos[i].last_meal_time > loop->time_to_die)
+		{
+			printing(&loop->philos[i], "is died");
+			pthread_mutex_unlock(&loop->death_mutex);
+			return (1);
+		}
+	}
+	pthread_mutex_unlock(&loop->death_mutex);
+	pthread_mutex_lock(&loop->eat_mutex);
+	if (check_meals(loop))
+	{
+		pthread_mutex_unlock(&loop->eat_mutex);
+		return (1);
+	}
+	pthread_mutex_unlock(&loop->eat_mutex);
+	return (0);
+}
 
 void	*start_loop(void	*philosopher)
 {
 	t_philosopher	*philo;
 
 	philo = (t_philosopher *)philosopher;
-	while (1)
+	if (philo->loop_con->number_of_philos == 1)
 	{
-		if (philo->id % 2 == 0)
-			even_id_philo(philo);
-		else
-			odd_id_philo(philo);
+		pthread_mutex_lock(philo->left_fork);
+		printing(philo, "has taken a fork");
+		pthread_mutex_unlock(philo->left_fork);
+		usleep(philo->loop_con->time_to_die * 1000);
+		printing(philo, "died");
+		return (NULL);
+	}
+	else 
+	{
+		while (is_must_stop(philo->loop_con) == 0)
+		{
+			eating_time(philo);
+			printing(philo, "is sleeping");
+			usleep(philo->loop_con->time_to_sleep * 1000);
+			printing(philo, "is thinking");
+		}
 	}
 	return (NULL);
 }
@@ -43,7 +110,7 @@ void	*loop_ctrl(void *tmp)
 			pthread_mutex_lock(&loop->death_mutex);
 			if (get_time() - loop->philos[i].last_meal_time > loop->time_to_die)
 			{
-				printf("%llu %d died\n", get_time() - loop->start_time, loop->philos[i].id);
+				printing(&loop->philos[i], "died");
 				loop->is_someone_dead = 1;
 				pthread_mutex_unlock(&loop->death_mutex);
 				return (NULL);
@@ -69,12 +136,11 @@ void init_values(t_loop *loop, int i)
 		loop->philos[i].right_fork = &loop->forks[i + 1];
 }
 
-void	create_philosophers(t_loop *loop)
+void	create_threads(t_loop *loop)
 {
     int	i;
 
     i = 0;
-    loop->philos = malloc(sizeof(t_philosopher) * (loop->number_of_philos + 1));
     while (i < loop->number_of_philos)
     {
         init_values(loop, i);
@@ -91,7 +157,6 @@ void	create_mutexes(t_loop *loop)
 	int	i;
 
 	i = 0;
-	loop->forks = malloc(sizeof(pthread_mutex_t) * loop->number_of_philos);
 	while (i < loop->number_of_philos)
 		pthread_mutex_init(&loop->forks[i++], NULL);
 	pthread_mutex_init(&loop->death_mutex, NULL);
@@ -110,12 +175,21 @@ void	init_loop(t_loop *loop, int argc, char **argv)
 	loop->time_to_sleep = ft_atoi(argv[4]);
 	loop->start_time = get_time();
 	loop->is_someone_dead = 0;
+	loop->philos = malloc(sizeof(t_philosopher) * (loop->number_of_philos));
+	if (!loop->philos)
+		return ;
+	loop->forks = malloc(sizeof(pthread_mutex_t) * loop->number_of_philos);
+	if (!loop->forks)
+	{
+		free(loop->philos);
+		return ;
+	}
 	if (argc == 6)
 		loop->number_of_times_each_philosopher_must_eat = ft_atoi(argv[5]);
 	else
 		loop->number_of_times_each_philosopher_must_eat = -1;
 	create_mutexes(loop);
-	create_philosophers(loop);
+	create_threads(loop);
 }
 
 void	end(t_loop *loop)
