@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/10 20:42:14 by marvin            #+#    #+#             */
-/*   Updated: 2025/05/17 17:32:24 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/17 17:48:36 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,30 +45,29 @@ int check_meals(t_loop *loop)
 	return (c == loop->number_of_philos);
 }
 
-void	is_must_stop(t_loop *loop)
+void	*is_must_stop(void *arg)
 {
 	int	i;
 
+	t_loop *loop;
+	loop = (t_loop *)arg;
 	i = 0;
-	pthread_mutex_lock(&loop->death_mutex);
+
+
 	while (i < loop->number_of_philos)
 	{
+		pthread_mutex_lock(&loop->eat_mutex);
 		if (get_time() - loop->philos[i].last_meal_time > loop->time_to_die)
 		{
-			printing(&loop->philos[i], "is died");
-			pthread_mutex_unlock(&loop->death_mutex);
-			return ;
+			killer(&loop->philos[i]);
+			pthread_mutex_unlock(&loop->eat_mutex);
+			return NULL;
 		}
-	}
-	pthread_mutex_unlock(&loop->death_mutex);
-	pthread_mutex_lock(&loop->eat_mutex);
-	if (check_meals(loop))
-	{
 		pthread_mutex_unlock(&loop->eat_mutex);
-		return ;
+
 	}
-	pthread_mutex_unlock(&loop->eat_mutex);
-	return ;
+
+	return NULL;
 }
 
 int check_stop(t_loop *loop)
@@ -164,12 +163,11 @@ int	create_threads(t_loop *loop)
 		i++;
     }
 	usleep(100);
-	/*if (pthread_create(&loop->control_thread, NULL, loop_ctrl, loop) != 0)
+	if (pthread_create(&loop->control_thread, NULL, is_must_stop, loop) != 0)
 	{
     	printf("Thread %d başlatılamadı!\n", loop->philos[i].id);
 		return (1);
 	}
-	return (0);*/
 	return (0);
 }
 
