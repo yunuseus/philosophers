@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/10 20:42:14 by marvin            #+#    #+#             */
-/*   Updated: 2025/05/17 16:07:41 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/17 16:33:45 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ int check_meals(t_loop *loop)
 	return (c == loop->number_of_philos);
 }
 
-int	is_must_stop(t_loop *loop)
+void	is_must_stop(t_loop *loop)
 {
 	int	i;
 
@@ -54,7 +54,7 @@ int	is_must_stop(t_loop *loop)
 		{
 			printing(&loop->philos[i], "is died");
 			pthread_mutex_unlock(&loop->death_mutex);
-			return (1);
+			return (NULL);
 		}
 	}
 	pthread_mutex_unlock(&loop->death_mutex);
@@ -62,10 +62,10 @@ int	is_must_stop(t_loop *loop)
 	if (check_meals(loop))
 	{
 		pthread_mutex_unlock(&loop->eat_mutex);
-		return (1);
+		return (NULL);
 	}
 	pthread_mutex_unlock(&loop->eat_mutex);
-	return (0);
+	return (NULL);
 }
 
 void	*start_loop(void	*philosopher)
@@ -145,51 +145,58 @@ void	create_threads(t_loop *loop)
     {
         init_values(loop, i);
         if (pthread_create(&loop->philos[i].thread, NULL, start_loop, &loop->philos[i]) != 0)
+		{
             printf("Thread %d başlatılamadı!\n", loop->philos[i].id);
+			return (1);
+		}
         i++;
     }
 	usleep(100);
-	//pthread_create(&loop->control_thread, NULL, loop_ctrl, loop);
+	if (pthread_create(&loop->control_thread, NULL, loop_ctrl, loop) != 0)
+	{
+    	printf("Thread %d başlatılamadı!\n", loop->philos[i].id);
+		return (1);
+	}
 }
 
-void	create_mutexes(t_loop *loop)
+int	create_mutexes(t_loop *loop)
 {
 	int	i;
 
 	i = 0;
 	while (i < loop->number_of_philos)
-		pthread_mutex_init(&loop->forks[i++], NULL);
-	pthread_mutex_init(&loop->death_mutex, NULL);
-	pthread_mutex_init(&loop->print_mutex, NULL);
-	pthread_mutex_init(&loop->eat_mutex, NULL);
+	{
+		if (!pthread_mutex_init(&loop->forks[i++], NULL))
+			return (1);
+	}
+	if (!pthread_mutex_init(&loop->death_mutex, NULL))
+		return (1);
+	if (!pthread_mutex_init(&loop->print_mutex, NULL))
+		return (1);
+	if (!pthread_mutex_init(&loop->eat_mutex, NULL))
+		return (1);
+	return (0);
 }
 
-void	init_loop(t_loop *loop, int argc, char **argv)
+int	init_loop(t_loop *loop, int argc, char **argv)
 {
 	int	i;
 
 	i = 0;
-	loop->number_of_philos = ft_atoi(argv[1]);
-	loop->time_to_die = ft_atoi(argv[2]);
-	loop->time_to_eat = ft_atoi(argv[3]);
-	loop->time_to_sleep = ft_atoi(argv[4]);
-	loop->start_time = get_time();
-	loop->is_someone_dead = 0;
 	loop->philos = malloc(sizeof(t_philosopher) * (loop->number_of_philos));
 	if (!loop->philos)
-		return ;
+		return 1;
 	loop->forks = malloc(sizeof(pthread_mutex_t) * loop->number_of_philos);
 	if (!loop->forks)
 	{
 		free(loop->philos);
-		return ;
+		return (1);
 	}
-	if (argc == 6)
-		loop->number_of_times_each_philosopher_must_eat = ft_atoi(argv[5]);
-	else
-		loop->number_of_times_each_philosopher_must_eat = -1;
-	create_mutexes(loop);
-	create_threads(loop);
+	if (!create_mutexes(loop))
+		return (1);
+	if (écreate_threads(loop))
+		return (1);
+	return (0);
 }
 
 void	end(t_loop *loop)
@@ -205,6 +212,28 @@ void	end(t_loop *loop)
 	free(loop->forks);
 	free(loop->philos);
 }
+void init_args(t_loop *loop, char *argv, int argc)
+{
+	loop->number_of_philos = ft_atoi(argv[1]);
+	loop->time_to_die = ft_atoi(argv[2]);
+	loop->time_to_eat = ft_atoi(argv[3]);
+	loop->time_to_sleep = ft_atoi(argv[4]);
+	loop->start_time = get_time();
+	loop->is_someone_dead = 0;
+	if (argc == 6)
+		loop->number_of_times_each_philosopher_must_eat = ft_atoi(argv[5]);
+	else
+		loop->number_of_times_each_philosopher_must_eat = -1;
+	loop->philos = malloc(sizeof(t_philosopher) * (loop->number_of_philos));
+		if (!loop->philos)
+			return 1;
+	loop->forks = malloc(sizeof(pthread_mutex_t) * loop->number_of_philos);
+	if (!loop->forks)
+	{
+		free(loop->philos);
+		return (1);
+	}
+}
 
 int	main(int argc, char **argv)
 {
@@ -213,7 +242,9 @@ int	main(int argc, char **argv)
 
 	if (arg_check(argc, argv) == 1)
 		return (1);
-	init_loop(&loop, argc, argv);
+	init_args(&loop, argv, argc);
+	if (!init_loop(&loop, argc, argv))
+		return (1);
 	i = 0;
 	while (i < loop.number_of_philos)
 	{
