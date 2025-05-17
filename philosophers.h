@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 15:49:20 by yalp              #+#    #+#             */
-/*   Updated: 2025/05/17 16:11:55 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/17 16:41:52 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ typedef struct loop_s
 	int					is_must_stop;
 	pthread_t			control_thread;
 	pthread_mutex_t		*forks;
+	pthread_mutex_t		check_mutex;
 	pthread_mutex_t		print_mutex;
 	pthread_mutex_t		death_mutex;
 	pthread_mutex_t		eat_mutex;

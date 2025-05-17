@@ -6,15 +6,18 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/10 20:42:14 by marvin            #+#    #+#             */
-/*   Updated: 2025/05/17 16:33:45 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/17 17:32:24 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
-void kill(t_philosopher *piholosoper)
+void killer(t_philosopher *phiolosoper)
 {
-	
+	pthread_mutex_lock(&phiolosoper->loop_con->death_mutex);
+	phiolosoper->loop_con->is_must_stop = 1;
+	printing(phiolosoper, "is died");
+	pthread_mutex_unlock(&phiolosoper->loop_con->death_mutex);
 }
 
 void printing(t_philosopher *philo, char *str)
@@ -54,7 +57,7 @@ void	is_must_stop(t_loop *loop)
 		{
 			printing(&loop->philos[i], "is died");
 			pthread_mutex_unlock(&loop->death_mutex);
-			return (NULL);
+			return ;
 		}
 	}
 	pthread_mutex_unlock(&loop->death_mutex);
@@ -62,10 +65,20 @@ void	is_must_stop(t_loop *loop)
 	if (check_meals(loop))
 	{
 		pthread_mutex_unlock(&loop->eat_mutex);
-		return (NULL);
+		return ;
 	}
 	pthread_mutex_unlock(&loop->eat_mutex);
-	return (NULL);
+	return ;
+}
+
+int check_stop(t_loop *loop)
+{
+	int	ret;
+
+	pthread_mutex_lock(&loop->check_mutex);
+	ret = loop->is_must_stop;
+	pthread_mutex_unlock(&loop->check_mutex);
+	return (ret);
 }
 
 void	*start_loop(void	*philosopher)
@@ -84,7 +97,7 @@ void	*start_loop(void	*philosopher)
 	}
 	else 
 	{
-		while (is_must_stop(philo->loop_con) == 0)
+		while (check_stop(philo->loop_con) == 0)
 		{
 			eating_time(philo);
 			printing(philo, "is sleeping");
@@ -113,14 +126,13 @@ void	*loop_ctrl(void *tmp)
 				printing(&loop->philos[i], "died");
 				loop->is_someone_dead = 1;
 				pthread_mutex_unlock(&loop->death_mutex);
-				return (NULL);
+				
 			}
 			else
 				pthread_mutex_unlock(&loop->death_mutex);
 			i++;
 		}
 	}
-	return (NULL);
 }
 
 void init_values(t_loop *loop, int i)
@@ -136,7 +148,7 @@ void init_values(t_loop *loop, int i)
 		loop->philos[i].right_fork = &loop->forks[i + 1];
 }
 
-void	create_threads(t_loop *loop)
+int	create_threads(t_loop *loop)
 {
     int	i;
 
@@ -146,36 +158,40 @@ void	create_threads(t_loop *loop)
         init_values(loop, i);
         if (pthread_create(&loop->philos[i].thread, NULL, start_loop, &loop->philos[i]) != 0)
 		{
-            printf("Thread %d başlatılamadı!\n", loop->philos[i].id);
+			printf("Thread %d başlatılamadı!\n", loop->philos[i].id);
 			return (1);
 		}
-        i++;
+		i++;
     }
 	usleep(100);
-	if (pthread_create(&loop->control_thread, NULL, loop_ctrl, loop) != 0)
+	/*if (pthread_create(&loop->control_thread, NULL, loop_ctrl, loop) != 0)
 	{
     	printf("Thread %d başlatılamadı!\n", loop->philos[i].id);
 		return (1);
 	}
+	return (0);*/
+	return (0);
 }
 
 int	create_mutexes(t_loop *loop)
 {
-	int	i;
+    int	i;
 
-	i = 0;
-	while (i < loop->number_of_philos)
-	{
-		if (!pthread_mutex_init(&loop->forks[i++], NULL))
-			return (1);
-	}
-	if (!pthread_mutex_init(&loop->death_mutex, NULL))
-		return (1);
-	if (!pthread_mutex_init(&loop->print_mutex, NULL))
-		return (1);
-	if (!pthread_mutex_init(&loop->eat_mutex, NULL))
-		return (1);
-	return (0);
+    i = 0;
+    while (i < loop->number_of_philos)
+    {
+        if (pthread_mutex_init(&loop->forks[i++], NULL) != 0)
+            return (1);
+    }
+    if (pthread_mutex_init(&loop->check_mutex, NULL) != 0)
+        return (1);
+    if (pthread_mutex_init(&loop->death_mutex, NULL) != 0)
+        return (1);
+    if (pthread_mutex_init(&loop->print_mutex, NULL) != 0)
+        return (1);
+    if (pthread_mutex_init(&loop->eat_mutex, NULL) != 0)
+        return (1);
+    return (0);
 }
 
 int	init_loop(t_loop *loop, int argc, char **argv)
@@ -183,18 +199,14 @@ int	init_loop(t_loop *loop, int argc, char **argv)
 	int	i;
 
 	i = 0;
-	loop->philos = malloc(sizeof(t_philosopher) * (loop->number_of_philos));
-	if (!loop->philos)
-		return 1;
-	loop->forks = malloc(sizeof(pthread_mutex_t) * loop->number_of_philos);
 	if (!loop->forks)
 	{
 		free(loop->philos);
 		return (1);
 	}
-	if (!create_mutexes(loop))
+	if (create_mutexes(loop))
 		return (1);
-	if (écreate_threads(loop))
+	if (create_threads(loop))
 		return (1);
 	return (0);
 }
@@ -212,7 +224,7 @@ void	end(t_loop *loop)
 	free(loop->forks);
 	free(loop->philos);
 }
-void init_args(t_loop *loop, char *argv, int argc)
+int init_args(t_loop *loop, char **argv, int argc)
 {
 	loop->number_of_philos = ft_atoi(argv[1]);
 	loop->time_to_die = ft_atoi(argv[2]);
@@ -220,19 +232,21 @@ void init_args(t_loop *loop, char *argv, int argc)
 	loop->time_to_sleep = ft_atoi(argv[4]);
 	loop->start_time = get_time();
 	loop->is_someone_dead = 0;
+	loop->is_must_stop = 0;
 	if (argc == 6)
 		loop->number_of_times_each_philosopher_must_eat = ft_atoi(argv[5]);
 	else
 		loop->number_of_times_each_philosopher_must_eat = -1;
-	loop->philos = malloc(sizeof(t_philosopher) * (loop->number_of_philos));
+	loop->philos = malloc(sizeof(t_philosopher) * loop->number_of_philos);
 		if (!loop->philos)
-			return 1;
+			return (1);
 	loop->forks = malloc(sizeof(pthread_mutex_t) * loop->number_of_philos);
 	if (!loop->forks)
 	{
 		free(loop->philos);
 		return (1);
 	}
+	return (0);
 }
 
 int	main(int argc, char **argv)
@@ -242,8 +256,9 @@ int	main(int argc, char **argv)
 
 	if (arg_check(argc, argv) == 1)
 		return (1);
-	init_args(&loop, argv, argc);
-	if (!init_loop(&loop, argc, argv))
+	if (init_args(&loop, argv, argc))
+		return (1);
+	if (init_loop(&loop, argc, argv))
 		return (1);
 	i = 0;
 	while (i < loop.number_of_philos)
