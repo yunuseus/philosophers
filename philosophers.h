@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 15:49:20 by yalp              #+#    #+#             */
-/*   Updated: 2025/05/17 16:41:52 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/17 17:58:12 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ typedef struct loop_s
 	int					time_to_sleep;
 	int					number_of_times_each_philosopher_must_eat;
 	int 				is_someone_dead;
-	int					is_must_stop;
+	int					stop;
 	pthread_t			control_thread;
 	pthread_mutex_t		*forks;
 	pthread_mutex_t		check_mutex;

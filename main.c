@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/10 20:42:14 by marvin            #+#    #+#             */
-/*   Updated: 2025/05/17 17:48:36 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/17 18:00:42 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,8 @@
 void killer(t_philosopher *phiolosoper)
 {
 	pthread_mutex_lock(&phiolosoper->loop_con->death_mutex);
-	phiolosoper->loop_con->is_must_stop = 1;
-	printing(phiolosoper, "is died");
+	phiolosoper->loop_con->stop = 1;
+	printing(phiolosoper, "died");
 	pthread_mutex_unlock(&phiolosoper->loop_con->death_mutex);
 }
 
@@ -74,9 +74,9 @@ int check_stop(t_loop *loop)
 {
 	int	ret;
 
-	pthread_mutex_lock(&loop->check_mutex);
-	ret = loop->is_must_stop;
-	pthread_mutex_unlock(&loop->check_mutex);
+	pthread_mutex_lock(&loop->death_mutex);
+	ret = loop->stop;
+	pthread_mutex_unlock(&loop->death_mutex);
 	return (ret);
 }
 
@@ -163,10 +163,13 @@ int	create_threads(t_loop *loop)
 		i++;
     }
 	usleep(100);
-	if (pthread_create(&loop->control_thread, NULL, is_must_stop, loop) != 0)
+	if (loop->number_of_philos != 1)
 	{
-    	printf("Thread %d başlatılamadı!\n", loop->philos[i].id);
-		return (1);
+		if (pthread_create(&loop->control_thread, NULL, is_must_stop, loop) != 0)
+		{
+			printf("Thread %d başlatılamadı!\n", loop->philos[i].id);
+			return (1);
+		}
 	}
 	return (0);
 }
@@ -230,7 +233,7 @@ int init_args(t_loop *loop, char **argv, int argc)
 	loop->time_to_sleep = ft_atoi(argv[4]);
 	loop->start_time = get_time();
 	loop->is_someone_dead = 0;
-	loop->is_must_stop = 0;
+	loop->stop = 0;
 	if (argc == 6)
 		loop->number_of_times_each_philosopher_must_eat = ft_atoi(argv[5]);
 	else
