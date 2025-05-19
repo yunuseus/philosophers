@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/17 15:05:10 by yalp              #+#    #+#             */
-/*   Updated: 2025/05/19 15:18:48 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/19 15:33:53 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,7 @@ void	*start_loop(void	*philosopher)
 	return (NULL);
 }
 
-int	init_loop(t_loop *loop, int argc, char **argv)
+int	init_loop(t_loop *loop)
 {
 	int	i;
 

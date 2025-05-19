@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/10 20:42:14 by marvin            #+#    #+#             */
-/*   Updated: 2025/05/19 15:19:33 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/19 15:34:09 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,6 @@ int	init_args(t_loop *loop, char **argv, int argc)
 	loop->time_to_eat = ft_atoi(argv[3]);
 	loop->time_to_sleep = ft_atoi(argv[4]);
 	loop->start_time = get_time();
-	loop->is_someone_dead = 0;
 	loop->stop = 0;
 	loop->eat = 0;
 	if (argc == 6)
@@ -74,7 +73,7 @@ int	main(int argc, char **argv)
 		return (1);
 	if (init_args(&loop, argv, argc))
 		return (1);
-	if (init_loop(&loop, argc, argv))
+	if (init_loop(&loop))
 		return (1);
 	i = 0;
 	pthread_join(loop.control_thread, NULL);
