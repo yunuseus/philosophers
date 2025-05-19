@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 17:19:11 by yalp              #+#    #+#             */
-/*   Updated: 2025/05/19 15:21:44 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/19 16:25:26 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,8 +80,6 @@ int	create_mutexes(t_loop *loop)
 		if (pthread_mutex_init(&loop->forks[i++], NULL) != 0)
 			return (1);
 	}
-	if (pthread_mutex_init(&loop->check_mutex, NULL) != 0)
-		return (1);
 	if (pthread_mutex_init(&loop->death_mutex, NULL) != 0)
 		return (1);
 	if (pthread_mutex_init(&loop->print_mutex, NULL) != 0)

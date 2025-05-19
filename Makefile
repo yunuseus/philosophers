@@ -1,7 +1,7 @@
 NAME = philosophers
 
 CC = cc
-CFLAGS = -fsanitize=thread -Wall -Wextra -Werror 
+CFLAGS = -fsanitize=address -Wall -Wextra -Werror 
 SRC = main.c arg_checks.c utils.c loop.c control.c
       
 OBJ = $(SRC:.c=.o)

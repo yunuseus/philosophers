@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/10 20:42:14 by marvin            #+#    #+#             */
-/*   Updated: 2025/05/19 15:34:09 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/19 16:26:50 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,5 +82,6 @@ int	main(int argc, char **argv)
 		pthread_join(loop.philos[i].thread, NULL);
 		i++;
 	}
+	end(&loop);
 	return (0);
 }
