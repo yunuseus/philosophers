@@ -6,25 +6,28 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/10 20:42:14 by marvin            #+#    #+#             */
-/*   Updated: 2025/05/17 18:06:09 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/19 15:05:37 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
-void killer(t_philosopher *phiolosoper)
+void killer(t_philosopher *philosoper)
 {
-	pthread_mutex_lock(&phiolosoper->loop_con->death_mutex);
-	phiolosoper->loop_con->stop = 1;
-	printing(phiolosoper, "died");
-	pthread_mutex_unlock(&phiolosoper->loop_con->death_mutex);
+	pthread_mutex_lock(&philosoper->loop_con->death_mutex);
+	philosoper->loop_con->stop = 1;
+	pthread_mutex_lock(&philosoper->loop_con->print_mutex);
+	printf("%llu %d %s\n", get_time() - philosoper->loop_con->start_time, philosoper->id, "died");
+	pthread_mutex_unlock(&philosoper->loop_con->print_mutex);
+	pthread_mutex_unlock(&philosoper->loop_con->death_mutex);
 }
 
 void printing(t_philosopher *philo, char *str)
 {
+	if (check_stop(philo->loop_con))
+		return ;
 	pthread_mutex_lock(&philo->loop_con->print_mutex);
-	if (philo->loop_con->is_someone_dead == 0)
-		printf("%llu %d %s\n", get_time() - philo->loop_con->start_time, philo->id, str);
+	printf("%llu %d %s\n", get_time() - philo->loop_con->start_time, philo->id, str);
 	pthread_mutex_unlock(&philo->loop_con->print_mutex);
 }
 
@@ -53,17 +56,18 @@ void	*is_must_stop(void *arg)
 	loop = (t_loop *)arg;
 	i = 0;
 
-
 	while (i < loop->number_of_philos)
 	{
-		pthread_mutex_lock(&loop->eat_mutex);
+		if (is_all_philos_full(loop))
+			return (NULL);
+		pthread_mutex_lock(&loop->death_mutex);
 		if (get_time() - loop->philos[i].last_meal_time > loop->time_to_die)
 		{
 			killer(&loop->philos[i]);
-			pthread_mutex_unlock(&loop->eat_mutex);
+			pthread_mutex_unlock(&loop->death_mutex);
 			return NULL;
 		}
-		pthread_mutex_unlock(&loop->eat_mutex);
+		pthread_mutex_unlock(&loop->death_mutex);
 
 	}
 	return (NULL);
@@ -71,12 +75,16 @@ void	*is_must_stop(void *arg)
 
 int check_stop(t_loop *loop)
 {
-	int	ret;
+	int	death;
+	int eat;
 
+	pthread_mutex_lock(&loop->eat_mutex);
+	eat = loop->eat;
+	pthread_mutex_unlock(&loop->eat_mutex);
 	pthread_mutex_lock(&loop->death_mutex);
-	ret = loop->stop;
+	death = loop->stop;
 	pthread_mutex_unlock(&loop->death_mutex);
-	return (ret);
+	return (death || eat);
 }
 
 void	*start_loop(void	*philosopher)
@@ -98,6 +106,8 @@ void	*start_loop(void	*philosopher)
 		while (check_stop(philo->loop_con) == 0)
 		{
 			eating_time(philo);
+			if (check_stop(philo->loop_con) == 1)
+				return (NULL);
 			printing(philo, "is sleeping");
 			usleep(philo->loop_con->time_to_sleep * 1000);
 			printing(philo, "is thinking");
@@ -130,7 +140,7 @@ int	create_threads(t_loop *loop)
         init_values(loop, i);
         if (pthread_create(&loop->philos[i].thread, NULL, start_loop, &loop->philos[i]) != 0)
 		{
-			printf("Thread %d başlatılamadı!\n", loop->philos[i].id);
+			printf("Thread %d can not started!\n", loop->philos[i].id);
 			return (1);
 		}
 		i++;
@@ -140,7 +150,7 @@ int	create_threads(t_loop *loop)
 	{
 		if (pthread_create(&loop->control_thread, NULL, is_must_stop, loop) != 0)
 		{
-			printf("Thread %d başlatılamadı!\n", loop->philos[i].id);
+			printf("Thread %d can not started!\n", loop->philos[i].id);
 			return (1);
 		}
 	}
@@ -207,6 +217,7 @@ int init_args(t_loop *loop, char **argv, int argc)
 	loop->start_time = get_time();
 	loop->is_someone_dead = 0;
 	loop->stop = 0;
+	loop->eat = 0;
 	if (argc == 6)
 		loop->number_of_times_each_philosopher_must_eat = ft_atoi(argv[5]);
 	else
