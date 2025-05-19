@@ -6,13 +6,13 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/17 15:05:10 by yalp              #+#    #+#             */
-/*   Updated: 2025/05/19 14:28:26 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/19 15:18:48 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
-void forks(t_philosopher *philo)
+void	forks(t_philosopher *philo)
 {
 	if (philo->id % 2 == 0)
 	{
@@ -30,10 +30,10 @@ void forks(t_philosopher *philo)
 	}
 }
 
-void eating_time(t_philosopher *philosopher)
+void	eating_time(t_philosopher *philosopher)
 {
 	if (check_stop(philosopher->loop_con) == 1)
-		return ;	
+		return ;
 	forks(philosopher);
 	printing(philosopher, "is eating");
 	pthread_mutex_lock(&philosopher->loop_con->death_mutex);
@@ -45,4 +45,50 @@ void eating_time(t_philosopher *philosopher)
 	usleep(philosopher->loop_con->time_to_eat * 1000);
 	pthread_mutex_unlock(philosopher->right_fork);
 	pthread_mutex_unlock(philosopher->left_fork);
+}
+
+void	*start_loop(void	*philosopher)
+{
+	t_philosopher	*philo;
+
+	philo = (t_philosopher *)philosopher;
+	if (philo->loop_con->number_of_philos == 1)
+	{
+		pthread_mutex_lock(philo->left_fork);
+		printing(philo, "has taken a fork");
+		pthread_mutex_unlock(philo->left_fork);
+		usleep(philo->loop_con->time_to_die * 1000);
+		printing(philo, "died");
+		return (NULL);
+	}
+	else
+	{
+		while (check_stop(philo->loop_con) == 0)
+		{
+			eating_time(philo);
+			if (check_stop(philo->loop_con) == 1)
+				return (NULL);
+			printing(philo, "is sleeping");
+			usleep(philo->loop_con->time_to_sleep * 1000);
+			printing(philo, "is thinking");
+		}
+	}
+	return (NULL);
+}
+
+int	init_loop(t_loop *loop, int argc, char **argv)
+{
+	int	i;
+
+	i = 0;
+	if (!loop->forks)
+	{
+		free(loop->philos);
+		return (1);
+	}
+	if (create_mutexes(loop))
+		return (1);
+	if (create_threads(loop))
+		return (1);
+	return (0);
 }
