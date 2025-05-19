@@ -76,13 +76,16 @@ void	*is_must_stop(void *arg)
 	i = 0;
 	while (i < loop->number_of_philos)
 	{
-		if (is_all_philos_full(loop))
-			return (NULL);
+		if (loop->number_of_times_each_philosopher_must_eat != -1)
+		{
+			if (is_all_philos_full(loop))
+				return (NULL);
+		}
 		pthread_mutex_lock(&loop->death_mutex);
 		if (get_time() - loop->philos[i].last_meal_time > loop->time_to_die)
 		{
-			killer(&loop->philos[i]);
 			pthread_mutex_unlock(&loop->death_mutex);
+			killer(&loop->philos[i]);
 			return (NULL);
 		}
 		pthread_mutex_unlock(&loop->death_mutex);
