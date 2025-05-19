@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 17:19:11 by yalp              #+#    #+#             */
-/*   Updated: 2025/05/19 16:25:26 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/19 16:42:35 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,10 +51,7 @@ int	create_threads(t_loop *loop)
 		init_values(loop, i);
 		if (pthread_create(&loop->philos[i].thread, NULL,
 				start_loop, &loop->philos[i]) != 0)
-		{
-			printf("Thread %d can not started!\n", loop->philos[i].id);
 			return (1);
-		}
 		i++;
 	}
 	usleep(300);
@@ -62,10 +59,7 @@ int	create_threads(t_loop *loop)
 	{
 		if (pthread_create(&loop->control_thread, NULL,
 				is_must_stop, loop) != 0)
-		{
-			printf("Thread %d can not started!\n", loop->philos[i].id);
 			return (1);
-		}
 	}
 	return (0);
 }
@@ -75,16 +69,16 @@ int	create_mutexes(t_loop *loop)
 	int	i;
 
 	i = 0;
-	while (i < loop->number_of_philos)
-	{
-		if (pthread_mutex_init(&loop->forks[i++], NULL) != 0)
-			return (1);
-	}
 	if (pthread_mutex_init(&loop->death_mutex, NULL) != 0)
 		return (1);
 	if (pthread_mutex_init(&loop->print_mutex, NULL) != 0)
 		return (1);
 	if (pthread_mutex_init(&loop->eat_mutex, NULL) != 0)
 		return (1);
+	while (i < loop->number_of_philos)
+	{
+		if (pthread_mutex_init(&loop->forks[i++], NULL) != 0)
+			return (1);
+	}
 	return (0);
 }

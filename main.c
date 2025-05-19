@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/10 20:42:14 by marvin            #+#    #+#             */
-/*   Updated: 2025/05/19 16:26:50 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/19 16:31:44 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,10 @@ int	main(int argc, char **argv)
 	if (arg_check(argc, argv) == 1)
 		return (1);
 	if (init_args(&loop, argv, argc))
+	{
+		printf("Error: malloc failed\n");
 		return (1);
+	}
 	if (init_loop(&loop))
 		return (1);
 	i = 0;
