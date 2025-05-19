@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 15:42:47 by yalp              #+#    #+#             */
-/*   Updated: 2025/05/17 14:40:29 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/19 16:47:32 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,6 +89,11 @@ int	arg_check(int argc, char **argv)
 	{
 		printf("Invalid arguments\n");
 		return (1);
+	}
+	if (argc == 6)
+	{
+		if (ft_atoi(argv[5]) == 0)
+			return (1);
 	}
 	return (0);
 }
