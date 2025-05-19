@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/10 20:42:14 by marvin            #+#    #+#             */
-/*   Updated: 2025/05/19 16:31:44 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/19 17:14:53 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,9 @@ void	end(t_loop *loop)
 		pthread_mutex_destroy(&loop->forks[i]);
 		i++;
 	}
+	pthread_mutex_destroy(&loop->print_mutex);
+	pthread_mutex_destroy(&loop->death_mutex);
+	pthread_mutex_destroy(&loop->eat_mutex);
 	free(loop->forks);
 	free(loop->philos);
 }
