@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 15:42:47 by yalp              #+#    #+#             */
-/*   Updated: 2025/05/20 15:28:00 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/20 15:28:59 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ int	is_args_digit(int argc, char **argv)
 int	is_int(char **argv)
 {
 	int	i;
-	int j;
+	int	j;
 
 	i = 1;
 	j = 0;
@@ -74,7 +74,6 @@ int	is_int(char **argv)
 		j = 0;
 		while (argv[i][j])
 			j++;
-		
 		if (j > 10)
 			return (1);
 		i++;
