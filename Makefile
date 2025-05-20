@@ -1,4 +1,4 @@
-NAME = philosophers
+NAME = philo
 
 CC = cc
 CFLAGS = -fsanitize=address -Wall -Wextra -Werror 
