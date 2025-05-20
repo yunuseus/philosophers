@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/17 15:05:10 by yalp              #+#    #+#             */
-/*   Updated: 2025/05/19 16:41:15 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/20 15:39:44 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,12 +65,12 @@ void	*start_loop(void	*philosopher)
 	{
 		while (check_stop(philo->loop_con) == 0)
 		{
+			printing(philo, "is thinking");
 			eating_time(philo);
 			if (check_stop(philo->loop_con) == 1)
-				return (NULL);
+			return (NULL);
 			printing(philo, "is sleeping");
 			usleep(philo->loop_con->time_to_sleep * 1000);
-			printing(philo, "is thinking");
 		}
 	}
 	return (NULL);

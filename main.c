@@ -6,7 +6,7 @@
 /*   By: yalp <yalp@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/10 20:42:14 by marvin            #+#    #+#             */
-/*   Updated: 2025/05/19 17:14:53 by yalp             ###   ########.fr       */
+/*   Updated: 2025/05/20 15:48:47 by yalp             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,8 @@ int	main(int argc, char **argv)
 	if (init_loop(&loop))
 		return (1);
 	i = 0;
-	pthread_join(loop.control_thread, NULL);
+	if (loop.number_of_philos != 1)
+		pthread_join(loop.control_thread, NULL);
 	while (i < loop.number_of_philos)
 	{
 		pthread_join(loop.philos[i].thread, NULL);
